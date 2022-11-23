@@ -25,16 +25,19 @@ async function signupRequest(){
         console.log(vendor);
 
         let creds = {email:email,pass:pass,vendor:vendor};
-        console.log(creds);
+        
 
-        let signup_request = fetchWrap('/signup','POST', creds);
-
+        let signup_request = await fetchWrap('/signup','POST', creds);
+        console.log(signup_request);
         if(signup_request.success){
-            alert('Created new account');
-            return;
+            setTimeout( () => {
+                location.href = '../index.html';
+                return;
+            }, 500)
         }
         else{
-            alert('Couldnt make account');
+            document.getElementById('signupIssues').style.display = "inherit";
+            document.getElementById('issuespan').innerHTML = JSON.stringify(signup_request.issues);
             return;
         }
     }
