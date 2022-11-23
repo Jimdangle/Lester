@@ -5,8 +5,11 @@
 <head>
     <title>Lester the Tester</title>
     <script>
-        // Requests should all be of the form "<method> <path> <payload>;\n"
-        // all payloads need to be in json format {field: {sub_obj}, field_0: val0}
+/*
+░█░░░█▀█░█▀▀░█▀█░█░░░░█▀▄░█▀█░▀█▀░█▀█
+░█░░░█░█░█░░░█▀█░█░░░░█░█░█▀█░░█░░█▀█
+░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀▀▀░░▀▀░░▀░▀░░▀░░▀░▀
+*/
         function getHost(){
             return document.getElementById('live_host').innerHTML;
         }
@@ -18,6 +21,38 @@
             document.getElementById('jwt').innerHTML = jwt;
         }
 
+        function buildURL(end,path){
+            return `${end}${path}`;
+        }
+
+        function extractJWT(data){
+            if(data.jwt){
+                setJWT(data.jwt);
+                return data.jwt;
+            }
+            else{
+                return "";
+            }
+        }
+
+
+        function buildHost(host){
+            let out ="";
+            out = `http://${host}`;
+            return out;
+        }
+
+        function updateHost(){
+            let host = document.forms['host_form']['host'].value;
+            document.getElementById("live_host").innerHTML = buildHost(host);
+        }
+        // End local info
+/*
+░█▀▀░█▀▀░▀█▀░█▀▀░█░█
+░█▀▀░█▀▀░░█░░█░░░█▀█
+░▀░░░▀▀▀░░▀░░▀▀▀░▀░▀
+*/
+        // Fetching 
         async function fetchRequest(url, method, payload){
             // get everything ready for the actual fetch call
             //url = buildURL(endpoint,url);
@@ -41,11 +76,6 @@
             return resp.json();
         }
 
-        function buildURL(end,path){
-            return `${end}${path}`;
-        }
-
-
         function decodeRequest(request){
             let req = {
                 method: "",
@@ -64,75 +94,48 @@
                     req.payload += `${payload[i]}`;
                 }
 
-                console.log(req.payload);
+                //console.log(req.payload);
                 req.payload = JSON.parse(req.payload);
             }
 
             req.payload.jwt = getJWT();
-            console.log(req);
+            //console.log(req);
             return req;
         }
 
-        function appendResponses(response){
-            let list = document.getElementById('response_list');
-            let li_node = document.createElement('li');
-            let res_node = null;
-            if('success' in Object.keys(response)){
-                res_node = document.createTextNode(stringifyResponse(response));
-            }
-            else{
-                res_node = document.createTextNode(JSON.stringify(response));
-            }
-            li_node.appendChild(res_node);
-            list.appendChild(li_node);
-        }
-
-        function stringifyResponse(response){
-            let out ="";
-            let payload = (response.success==1) ? JSON.stringify(data) : JSON.stringify(response.issues);
-            out = `Success:${response.success} ,Payload: ${payload}`;
-            return out;
-        }
-
-        function extractJWT(data){
-            if(data.jwt){
-                setJWT(data.jwt);
-                return data.jwt;
-            }
-            else{
-                return "";
-            }
-        }
-
-        function requestWrap(request,iter){
-            console.log(request.indexOf('logout'));
+        function requestWrap(request,iter,interval){
+            //console.log(`Iter: ${iter}, Interval:${interval}`);
+            //console.log(request.indexOf('logout'));
             if(request.indexOf("logout")>=0){
-                console.log("logout");
+                //console.log("logout");
                 setTimeout( () => {
                     setJWT("");
                     appendResponses({"Client-msg": "Logged out"});
                     return;
-                }, 1500*iter);
+                }, interval*iter);
             }
+            else{
+                setTimeout( () => {
 
-            setTimeout( () => {
-
-                let req_data = decodeRequest(request);
-                fetchRequest(req_data.path,req_data.method,req_data.payload)
-                    .then( (response) => {
-                        appendResponses(response);
-                        if(response.success == 1){
-                            //console.log("good req");
-                            extractJWT(response.data);
-                        }
-                    })
-                    .catch( (err) => appendResponses(err));
-            }, 1500*iter);
+                    let req_data = decodeRequest(request);
+                    fetchRequest(req_data.path,req_data.method,req_data.payload)
+                        .then( (response) => {
+                            appendResponses(response);
+                            if(response.success == 1){
+                                //console.log("good req");
+                                extractJWT(response.data);
+                            }
+                        })
+                        .catch( (err) => appendResponses(err));
+                }, interval*iter);
+            }
         }
 
         function makeRequests(){
-            let interval = 1500; // 1.5 second
+            let interval = document.forms['request_form']['interval'].value; // interval value
+            interval = interval * 1000; // miliseconds to seconds 
             document.getElementById("response_list").innerHTML = "";
+            document.getElementById("card_list").innerHTML = "";
             let req_data = document.forms['request_form']['request_list'].value;
             //document.getElementById('tester').innerHTML = req_data;
             
@@ -142,23 +145,97 @@
             for(let req_ind in requests){
                 //let req_data = decodeRequest(requests[req_ind]);
                 
-                requestWrap(requests[req_ind],req_ind);
+                requestWrap(requests[req_ind],req_ind,interval);
             }
             
         }
 
 
-        function buildHost(host){
-            let out ="";
-            out = `http://${host}`;
-            return out;
+/*
+░█▀▄░█▀▀░█▀▀░█▀█░█▀█░█▀█░█▀▀░█▀▀░█▀▀
+░█▀▄░█▀▀░▀▀█░█▀▀░█░█░█░█░▀▀█░█▀▀░▀▀█
+░▀░▀░▀▀▀░▀▀▀░▀░░░▀▀▀░▀░▀░▀▀▀░▀▀▀░▀▀▀
+*/
+        function appendResponses(response){
+            let list = document.getElementById('response_list');
+            let li_node = document.createElement('li');
+            let res_node = null;
+            
+            //console.log(Object.keys(response))
+            if(response.success){
+                if(response.data.cards){
+                    console.log(response.data.cards);
+                    appendCards(response.data.cards);
+                }
+            }
+
+            res_node = document.createTextNode(JSON.stringify(response));
+            
+            li_node.appendChild(res_node);
+            list.appendChild(li_node);
         }
 
-        function updateHost(){
-            let host = document.forms['host_form']['host'].value;
-            document.getElementById("live_host").innerHTML = buildHost(host);
+        function appendCards(cards){
+            console.log(`# Cards : ${cards.length}`);
+            for(let i in cards){
+                appendCard(cards[i]);
+            }
         }
 
+        function appendCard(card){
+            let list = document.getElementById('card_list');
+            console.log(list);
+            let li_node = document.createElement('li');
+            let card_data = JSON.parse(card.data);
+
+            list.appendChild(li_node);
+
+            console.log("make div");
+            let CARD = document.createElement('div');
+            CARD.setAttribute('id',`CARD${card.id}`);
+            
+            li_node.appendChild(CARD);
+
+            let img = document.createElement('img');
+            console.log(Object.keys(card_data));
+            let src = (card.img_url) ? card.img_url : "";
+            img.setAttribute('alt','No Image');
+            img.setAttribute('src',src);
+            img.setAttribute('height',"64px");
+            img.setAttribute('width',"64px");
+
+            CARD.appendChild(img);
+
+
+            console.log("make item");
+            let item = document.createElement('h4');
+            let itemText = document.createTextNode(card_data.item);
+            item.appendChild(itemText);
+            CARD.appendChild(item);
+
+            console.log("make vendr");
+            let vendor = document.createElement('p');
+            let ven    = (card.vendor) ? card.vendor : "No Vendor";
+            let vendorText = document.createTextNode(ven);
+            vendor.appendChild(vendorText);
+            CARD.appendChild(vendor);
+
+            console.log("make pos");
+            let pos = document.createElement('p');
+            let posText = document.createTextNode(`(${card.lat},${card.lon})`)
+            pos.appendChild(posText);
+            CARD.appendChild(pos);
+
+            console.log("add to list");
+            return;
+        }
+
+
+/* 
+░▀█▀░█▄█░█▀█░█▀▀░█▀▀░█▀▀
+░░█░░█░█░█▀█░█░█░█▀▀░▀▀█
+░▀▀▀░▀░▀░▀░▀░▀▀▀░▀▀▀░▀▀▀
+*/ 
         function imgHeaders(){
             let header_element = document.forms['img_form']['img_headers'].value;
             return JSON.parse(header_element);
@@ -169,6 +246,7 @@
             console.log(document.getElementById('img_file').files);
 
             let file = files[0];
+            let type = file.type;
 
             if(file){
                 console.log(file.type);
@@ -178,7 +256,7 @@
 
                 reader.onload = (evt) => {
                     console.log(evt.target.result);
-                    imgSubmit(evt.target.result,getJWT());
+                    imgSubmit(evt.target.result,type,getJWT());
                 }
 
                 reader.onerror = (err) => {
@@ -190,9 +268,21 @@
             }
         }
 
-        async function imgSubmit(blob,jwt){
+        async function imgSubmit(blob,type,jwt){
            let img_headers = imgHeaders();
-           let response = await fetch(`http://ec2-54-193-142-247.us-west-1.compute.amazonaws.com:3000/images/imgtest`, {
+           let expire = new Date();
+
+           expire = expire.getHours() + 2;
+
+           let closingTime = img_headers.timestamp;
+
+           let form = new FormData();
+           form.append('file',blob)
+
+           let host = getHost();
+           let path = "/images/imgtest"
+           host = host + path;
+           let response = await fetch(host, {
                 method: "POST",
                 headers:{
                     'Custom-Json' : JSON.stringify( {
@@ -201,16 +291,23 @@
                         vendor: img_headers.vendor,
                         loc: img_headers.loc,
                         tags: img_headers.tags,
-                        timestamp: img_headers.timestamp,
+                        timestamp: expire,
+                        filetype: type
                     })
                 },
-                body: blob
+                body: form
            }); 
            
            let result = await response.json();
            appendResponses(result);
            console.log(result);
         }
+
+
+        function updateTextInput(val, elId) {
+          document.getElementById(elId).value=val; 
+        }
+
 
 
     </script>
@@ -242,6 +339,7 @@
 </head>
 
 <body>
+
     <div id="host_targets">
         <h2>Host info</h2>
         <form name="host_form">
@@ -251,15 +349,19 @@
         </form>
         <p id="live_host">http://127.0.0.1:3000</p>
     </div>
+
     <div id="request_field">
         <h2>Enter Requests</h2>
         <form name="request_form">
             <textarea name="request_list" rows="20" cols="100">get /test
 post /login {"email": "cal", "pass": "123"}
             </textarea>
-            <button type="button" onclick="makeRequests()">Request</button>   
+            <button type="button" onclick="makeRequests()">Request</button>
+            <input type="range" id="interval" name="interval" min="0" max="10" step="0.1" value="2" onchange="updateTextInput(this.value, 'intervalText');">
+            <input type="text" id="intervalText" value="2">  
         </form>
     </div>
+
     <div id="imgs">
         <h2>Image Request</h2>
         <form name="img_form">
@@ -271,14 +373,22 @@ post /login {"email": "cal", "pass": "123"}
             <button type="button" onclick="getImg()">Submit</button>
         </form>
     </div>
+
     <div id="user_info">
         <p>JWT TOKEN:</p>
         <p id="jwt"></p>
     </div>
+
     <div id="responses">
         <h3>Response Log</h3>
         <ol id="response_list"></ol>
     </div>
+    
+    <div id="cards">
+        <h3>Card List</h3>
+        <ol id="card_list"></ol>
+    </div>
+
     <div id="help">
         <h3>Help</h3>
         <ul>
@@ -328,5 +438,6 @@ post /upl2 {"item":, "loc":, "tags":, "timestamp": }
         <p>All the required fields have placeholders in them already so just change the values</p>
         <p>Select a file with the choose file button and hit submit</p>
     </div>
+
 </body>
 </html>
