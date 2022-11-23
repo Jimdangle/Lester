@@ -1,13 +1,37 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Lester 2.0</title>
+        <title>FoodSeek</title>
+        <!--Scripts-->
+        <script src="./scripts/main.js"></script>
+        <script src="./scripts/login.js"></script>
 
         <!--Styles-->
         <link href="./styles/main.css" rel="stylesheet"/>
+        <link href="./styles/login.css" rel="stylesheet"/>
     </head>
     <body>
-        <h1>Header 1</h1>
-        <p>Whateva bopidibopidi</p>
+        <div id="LoginScreenMainDiv" class="main_container">
+            <h1>FoodSeek</h1>
+            <div id="LoginDiv" class="ThirdCenter">
+                <h2>Sign in</h2>
+                <form id="LoginForm">
+                    <label for="email">Email</label>
+                    <input type="text" id="email" class="main_text_field" name="email" placeholder="jimbo@mail.com"/>
+                    <label for="pass">Password</label>
+                    <input type="password" id="pass" class="main_text_field" name="pass" placeholder="*********"/>
+                    <div id="loginButton">
+                        <button type="button" class="main_button" onclick="loginRequest()">Login</button>
+                    </div>
+                </form>
+            </div>
+            <div id="NoAccountDiv" class="ThirdCenter">
+                <h2>No Login</h2>
+                <form>
+                    <button type="button" class="main_button" onclick="location.href='./pages/signup.html'">Create Account</button>
+                    <button type="button" class="main_button">Forgot Password</button>
+                </form>
+            </div>
+        </div>
     </body>
 </html>
