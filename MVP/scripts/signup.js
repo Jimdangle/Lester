@@ -1,21 +1,23 @@
-
+// Perform validation on the password
 function validatePass(){
     let pass = document.getElementById('pass');
     let rePass = document.getElementById('rePass');
     //console.log(rePass.value);
     if ( pass.value === rePass.value ){
-        rePass.setAttribute('class', 'matchedPass');
         document.getElementById('badPasswordMatch').style.display = "none";
+        document.getElementById('pass').style.borderColor = "green";
+        document.getElementById('rePass').style.borderColor = "green";
         return true;
     }
     else{
-        rePass.setAttribute('class', 'nonMatchedPass');
         document.getElementById('badPasswordMatch').style.display = "inherit";
+        document.getElementById('pass').style.borderColor = "red";
+        document.getElementById('rePass').style.borderColor = "red";
         return false;
     }
 }
 
-
+// Perform the signup request 
 async function signupRequest(){
     if(validatePass()){
         let email = document.getElementById('email').value;

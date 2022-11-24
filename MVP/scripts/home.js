@@ -7,18 +7,6 @@ function badUserKickout(jwt){
     }
 }
 
-function setJWT(jwt){
-    document.getElementById('jwtspan').innerHTML = jwt;
-}
-
-function logout(){
-    localStorage.removeItem('foodseek-jwt');
-    setTimeout(()=> {
-        location.href = '../index.html';
-    }, 500
-    )
-}
-
 
 function loadHome(){
     let jwt = localStorage.getItem('foodseek-jwt');
@@ -27,18 +15,20 @@ function loadHome(){
 
     console.log(`user data : email:${email}, type: ${user_type}, jwt${jwt}`);
 
-    badUserKickout(jwt);
-    setJWT(jwt);
+    if(jwtCheck('../index.html')){
 
-    if(user_type === '1'){
-        console.log('Vendor');
-        // load vendor page
-        // location.href = '../vendor/home.thml'
-    }
-    else{
-        console.log('User');
-        // load user page
-        // location.href = '../user/home.html'
+        if(user_type === '1'){
+            console.log('Vendor');
+            location.href='./vendor/home.html';
+        }
+        else if(user_type === '0'){
+            console.log('User');
+            location.href = './user/home.html';
+        }
+        else{
+            console.log('neither');
+            location.href ='../../index.html';
+        }
     }
 
 }

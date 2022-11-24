@@ -41,3 +41,35 @@ async function fetchWrap(tar="/test", method="GET", payload=null){
 }
 
 
+function logout(){
+    localStorage.removeItem('foodseek-jwt');
+    localStorage.removeItem('foodseek-type');
+    localStorage.removeItem('foodseek-email');
+    setTimeout(()=> {
+        location.href = '../index.html';
+    }, 3500
+    )
+}
+
+function jwtCheck(index_location){
+    if(localStorage.getItem('foodseek-jwt')){
+        console.log("jwt found")
+        return true;
+    }
+    else{
+        console.log(`no jwt ${index_location}`);
+        setTimeout(() => {
+            location.href = index_location;
+            return;
+        }, 500);
+    }
+}
+
+function vendorCheck(){
+    if(localStorage.getItem('foodseek-type') === '1'){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
